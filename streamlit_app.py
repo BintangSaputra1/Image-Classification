@@ -25,7 +25,8 @@ def load_model():
         
         gdown.download(url, model_path, quiet=False)
         
-    return tf.keras.models.load_model(model_path)
+    # TAMBAHAN TERBARU: compile=False agar tidak error saat memuat model
+    return tf.keras.models.load_model(model_path, compile=False)
 
 # 4. Fungsi untuk Memprediksi Gambar
 def prediksi_gambar(image_pil, model):
@@ -65,7 +66,7 @@ st.title("🏗️ Deteksi Retak pada Beton")
 st.write("Unggah foto permukaan beton untuk mendeteksi apakah terdapat retakan atau tidak menggunakan model Artificial Intelligence.")
 
 # Memuat model di latar belakang
-with st.spinner("Sedang mengunduh dan memuat model AI dari Google Drive... (Ini mungkin memakan waktu beberapa saat)"):
+with st.spinner("Sedang mengunduh dan memuat model AI... (Ini mungkin memakan waktu beberapa saat)"):
     model_beton = load_model()
 
 # 6. Fitur Upload Gambar (Uploader File)
