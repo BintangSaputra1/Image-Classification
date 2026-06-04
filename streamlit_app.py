@@ -2,7 +2,34 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+import os
+import gdown
 
+# 1. Konfigurasi Halaman 
+st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_icon="🏗️")
+
+# 2. Definisikan Kelas (Label)
+class_names = ['Retak', 'Tidak_Retak']
+
+# 3. Fungsi untuk Memuat Model dengan Caching & Download Otomatis
+@st.cache_resource
+def load_model():
+    model_path = 'model_crack_beton.h5'
+    
+    # Mengecek apakah file model sudah ada di server
+    if not os.path.exists(model_path):
+        # Jika belum ada, download dari Google Drive
+        # GANTI TEKS DI BAWAH dengan ID unik file Google Drive Anda!
+        file_id = '1yaUHZ5p6aSxFuRYduiQKMwWpIJwf-if3' 
+        url = f'https://drive.google.com/uc?id={file_id}'
+        
+        gdown.download(url, model_path, quiet=False)
+        
+    return tf.keras.models.load_model(model_path)
+
+# 4. Fungsi untuk Memprediksi Gambar (Biarkan kodenya persis seperti sebelumnya)
+def prediksi_gambar(image_pil, model):
+    # ... (lanjutkan sisa kode Anda di bawah ini persis seperti sebelumnya) ...
 # 1. Konfigurasi Halaman 
 st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_icon="🏗️")
 
