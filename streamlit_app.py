@@ -1,11 +1,8 @@
-import os
-# SAKLAR RAHASIA: Wajib diletakkan Paling Atas sebelum import tensorflow!
-os.environ["TF_USE_LEGACY_KERAS"] = "1" 
-
 import streamlit as st
-import tensorflow as tf
+import tf_keras as tfk  # Menggunakan tf-keras secara langsung, bukan tensorflow!
 import numpy as np
 from PIL import Image
+import os
 import gdown
 
 # 1. Konfigurasi Halaman
@@ -21,32 +18,41 @@ def load_model():
     
     # Mengecek apakah file model sudah ada di server
     if not os.path.exists(model_path):
-        # Jika belum ada, download dari Google Drive
-        # GANTI ID DI BAWAH INI JIKA PERLU
+        # Download dari Google Drive menggunakan ID Anda
         file_id = '1yaUHZ5p6aSxFuRYduiQKMwWpIJwf-if3' 
         url = f'https://drive.google.com/uc?id={file_id}'
-        
         gdown.download(url, model_path, quiet=False)
         
-    return tf.keras.models.load_model(model_path, compile=False)
+    # Memuat model menggunakan tf_keras (Keras 2)
+    return tfk.models.load_model(model_path, compile=False)
 
 # 4. Fungsi untuk Memprediksi Gambar
 def prediksi_gambar(image_pil, model):
     img_height = 150
     img_width = 150
 
+    # Ubah ukuran gambar menggunakan library PIL (Pillow)
     img_resized = image_pil.resize((img_width, img_height))
-    img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
-    img_array = tf.expand_dims(img_array, 0)
 
+    # Ubah gambar menjadi array numpy menggunakan tfk
+    img_array = tfk.preprocessing.image.img_to_array(img_resized)
+
+    # Tambahkan dimensi batch menggunakan numpy (menggantikan tf.expand_dims)
+    img_array = np.expand_dims(img_array, axis=0)
+
+    # Melakukan prediksi
     predictions = model.predict(img_array)
-    score = tf.nn.softmax(predictions[0]) if len(class_names) > 2 else predictions[0]
+
+    # Logika persentase (Disesuaikan dengan numpy)
+    score = predictions[0]
 
     if len(class_names) == 2 and predictions.shape[-1] == 1:
+        # Jika menggunakan fungsi aktivasi Sigmoid
         predicted_class_idx = 1 if predictions[0][0] >= 0.5 else 0
         konfidensi = predictions[0][0] if predicted_class_idx == 1 else 1 - predictions[0][0]
         konfidensi = konfidensi * 100
     else:
+        # Jika menggunakan fungsi aktivasi Softmax
         predicted_class_idx = np.argmax(predictions[0])
         konfidensi = np.max(score) * 100
 
@@ -57,6 +63,7 @@ def prediksi_gambar(image_pil, model):
 st.title("🏗️ Deteksi Retak pada Beton")
 st.write("Unggah foto permukaan beton untuk mendeteksi apakah terdapat retakan atau tidak menggunakan model Artificial Intelligence.")
 
+# Memuat model di latar belakang
 with st.spinner("Sedang mengunduh dan memuat model AI... (Ini mungkin memakan waktu beberapa saat)"):
     model_beton = load_model()
 
