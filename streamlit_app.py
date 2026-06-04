@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import gdown
 
-# 1. Konfigurasi Halaman 
+# 1. Konfigurasi Halaman (WAJIB DI PALING ATAS SETELAH IMPORT)
 st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_icon="🏗️")
 
 # 2. Definisikan Kelas (Label)
@@ -27,24 +27,6 @@ def load_model():
         
     return tf.keras.models.load_model(model_path)
 
-# 4. Fungsi untuk Memprediksi Gambar (Biarkan kodenya persis seperti sebelumnya)
-def prediksi_gambar(image_pil, model):
-    # ... (lanjutkan sisa kode Anda di bawah ini persis seperti sebelumnya) ...
-# 1. Konfigurasi Halaman 
-st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_icon="🏗️")
-
-# 2. Definisikan Kelas (Label)
-# Pastikan urutan kelas ini SAMA PERSIS dengan saat Anda melakukan training
-class_names = ['Retak', 'Tidak_Retak']
-
-# 3. Fungsi untuk Memuat Model dengan Caching
-# @st.cache_resource sangat penting agar model tidak diload ulang setiap kali user mengklik sesuatu di layar
-@st.cache_resource
-def load_model():
-    # Pastikan file model ('model_crack_beton.h5') diletakkan satu folder dengan file 'streamlit_app.py' ini.
-    # Jika diletakkan di folder lain, ubah path-nya.
-    return tf.keras.models.load_model('model_crack_beton.h5')
-
 # 4. Fungsi untuk Memprediksi Gambar
 def prediksi_gambar(image_pil, model):
     img_height = 150
@@ -56,13 +38,13 @@ def prediksi_gambar(image_pil, model):
     # Ubah gambar menjadi array numpy
     img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
 
-    # Tambahkan dimensi batch (dari [150, 150, 3] menjadi [1, 150, 150, 3])
+    # Tambahkan dimensi batch
     img_array = tf.expand_dims(img_array, 0)
 
     # Melakukan prediksi
     predictions = model.predict(img_array)
 
-    # Logika persentase (Diambil persis dari logika Colab Anda)
+    # Logika persentase
     score = tf.nn.softmax(predictions[0]) if len(class_names) > 2 else predictions[0]
 
     if len(class_names) == 2 and predictions.shape[-1] == 1:
@@ -83,7 +65,7 @@ st.title("🏗️ Deteksi Retak pada Beton")
 st.write("Unggah foto permukaan beton untuk mendeteksi apakah terdapat retakan atau tidak menggunakan model Artificial Intelligence.")
 
 # Memuat model di latar belakang
-with st.spinner("Sedang memuat model AI... (Ini mungkin memakan waktu sebentar)"):
+with st.spinner("Sedang mengunduh dan memuat model AI dari Google Drive... (Ini mungkin memakan waktu beberapa saat)"):
     model_beton = load_model()
 
 # 6. Fitur Upload Gambar (Uploader File)
