@@ -11,22 +11,21 @@ st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_ic
 # 2. Definisikan Kelas (Label)
 class_names = ['Retak', 'Tidak_Retak']
 
-# 3. Fungsi untuk Memuat Model dengan Caching & Download Otomatis
+# 3. Fungsi untuk Memuat Model dengan Caching
 @st.cache_resource
 def load_model():
     model_path = 'model_crack_beton.h5'
     
-    # Mengecek apakah file model sudah ada di server
     if not os.path.exists(model_path):
         file_id = '1yaUHZ5p6aSxFuRYduiQKMwWpIJwf-if3' 
         try:
             gdown.download(id=file_id, output=model_path, quiet=False)
         except Exception as e:
-            st.error(f"Gagal mengunduh model dari Google Drive: {e}")
+            st.error(f"Gagal mengunduh model: {e}")
             return None
         
-    # Memuat model menggunakan tensorflow standar
     try:
+        # Langsung load model menggunakan TF bawaan
         model = tf.keras.models.load_model(model_path, compile=False)
         return model
     except Exception as e:
@@ -56,7 +55,7 @@ def prediksi_gambar(image_pil, model):
     hasil_prediksi = class_names[predicted_class_idx]
     return hasil_prediksi, konfidensi
 
-# 5. Antarmuka Pengguna (UI) Streamlit
+# 5. UI Streamlit
 st.title("🏗️ Deteksi Retak pada Beton")
 st.write("Unggah foto permukaan beton untuk mendeteksi apakah terdapat retakan atau tidak menggunakan model Artificial Intelligence.")
 
