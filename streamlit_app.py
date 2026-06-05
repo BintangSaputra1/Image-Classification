@@ -5,13 +5,38 @@ from PIL import Image
 import os
 import gdown
 
+# --- PATCH BYPASS ERROR KERAS 3 ---
+# Memaksa Keras untuk mengabaikan parameter 'quantization_config' yang bikin error
+def apply_keras_patch():
+    layer_classes = [
+        tf.keras.layers.Dense, 
+        tf.keras.layers.Conv2D, 
+        tf.keras.layers.MaxPooling2D, 
+        tf.keras.layers.Flatten, 
+        tf.keras.layers.Dropout
+    ]
+    for layer_cls in layer_classes:
+        try:
+            orig_from_config = layer_cls.from_config
+            def make_patched_from_config(orig_func):
+                def patched(cls, config):
+                    config.pop('quantization_config', None)
+                    return orig_func(config)
+                return classmethod(patched)
+            layer_cls.from_config = make_patched_from_config(orig_from_config)
+        except Exception:
+            pass
+
+apply_keras_patch()
+# ----------------------------------
+
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="Prediksi Retak Beton", layout="centered", page_icon="🏗️")
 
 # 2. Definisikan Kelas (Label)
 class_names = ['Retak', 'Tidak_Retak']
 
-# 3. Fungsi untuk Memuat Model dengan Caching
+# 3. Fungsi untuk Memuat Model
 @st.cache_resource
 def load_model():
     model_path = 'model_crack_beton.h5'
@@ -21,11 +46,10 @@ def load_model():
         try:
             gdown.download(id=file_id, output=model_path, quiet=False)
         except Exception as e:
-            st.error(f"Gagal mengunduh model: {e}")
+            st.error(f"Gagal mengunduh model dari GDrive: {e}")
             return None
         
     try:
-        # Langsung load model menggunakan TF bawaan
         model = tf.keras.models.load_model(model_path, compile=False)
         return model
     except Exception as e:
@@ -59,7 +83,7 @@ def prediksi_gambar(image_pil, model):
 st.title("🏗️ Deteksi Retak pada Beton")
 st.write("Unggah foto permukaan beton untuk mendeteksi apakah terdapat retakan atau tidak menggunakan model Artificial Intelligence.")
 
-with st.spinner("Sedang menyiapkan model AI... (Memakan waktu 1-2 menit untuk unduh awal)"):
+with st.spinner("Sedang menyiapkan model AI... (Memakan waktu sesaat untuk unduh awal)"):
     model_beton = load_model()
 
 if model_beton is None:
