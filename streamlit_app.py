@@ -1,8 +1,11 @@
+import os
+# WAJIB DI BARIS PALING ATAS: Memaksa penggunaan Keras versi lama (Keras 2)
+os.environ["TF_USE_LEGACY_KERAS"] = "1" 
+
 import streamlit as st
 import tf_keras as tfk
 import numpy as np
 from PIL import Image
-import os
 import gdown
 
 # 1. Konfigurasi Halaman
